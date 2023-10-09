@@ -140,7 +140,7 @@ export default function sankeyDiagram () {
         .on('click', selectLink)
 
     linkEnter.append('path')
-      .attr('d', link)
+      .attr('d', function (d) { return link(d) })
       .style('fill', 'white')
       .each(function (d) { this._current = d })
 
@@ -217,6 +217,32 @@ export default function sankeyDiagram () {
 
   //   slice.exit().remove();
   // }
+
+  //new path with curvature
+  function link(d) {
+    console.log("d, for the path", d)
+    var curvature = .6;
+    var x0 = d.source.x + d.source.dx,
+      x1 = d.target.x,
+      xi = d3.interpolateNumber(x0, x1),
+      x2 = xi(curvature),
+      x3 = xi(1 - curvature),
+      y0 = d.source.y + d.sy + d.dy / 2,
+      y1 = d.target.y + d.ty + d.dy / 2;
+    let data = "M" + x0 + "," + y0
+      + "C" + x2 + "," + y0
+      + " " + x3 + "," + y1
+      + " " + x1 + "," + y1
+      + "L" + x1 + "," + (y1 + d.target.dy)
+      + "C" + x3 + "," + (y1 + d.target.dy)
+      + " " + x2 + "," + (y0 + d.source.dy)
+      + " " + x0 + "," + (y0 + d.source.dy)
+      + "L" + x0 + "," + y0;
+
+      console.log("generated path", data)
+    return data;
+  }
+
 
   function updateGroups (svg, groups) {
     let group = svg.select('.groups').selectAll('.group')
